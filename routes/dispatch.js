@@ -48,10 +48,18 @@ router.post('/', async (req, res) => {
       );
     }
 
-    // Order status update karo
-    await pool.query(
-      `UPDATE orders SET status = 'dispatched' WHERE id = $1`,
+    const statusResult = await pool.query(
+      `SELECT bool_and(dispatched_qty >= quantity) AS fully_dispatched
+       FROM order_items
+       WHERE order_id = $1`,
       [order_id]
+    );
+    const nextStatus = statusResult.rows[0]?.fully_dispatched
+      ? 'dispatched'
+      : 'partial';
+    await pool.query(
+      `UPDATE orders SET status = $1 WHERE id = $2`,
+      [nextStatus, order_id]
     );
 
     res.status(201).json({ message: 'Challan created' });
