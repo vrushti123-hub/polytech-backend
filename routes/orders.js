@@ -47,12 +47,13 @@ router.post('/', async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [id, distributor_id, distributor_name, distributor_city, order_date, status, remarks]
     );
-    for (let item of items) {
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
       await pool.query(
         `INSERT INTO order_items (id, order_id, product_id, product_name, brand, color, quantity, dispatched_qty, stock_available, dispatch_history)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
-          `${id}-${item.product_id}`,
+          `${id}-${item.product_id}-${item.color}-${index}`,
           id,
           item.product_id,
           item.product_name,
